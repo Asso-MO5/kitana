@@ -8,12 +8,10 @@ export class PixelMuseumRoom extends Room<PixelMuseumRoomState> {
   patchRate = 50;
 
   onCreate(options: any) {
-    this.setState(new PixelMuseumRoomState());
+    this.state = new PixelMuseumRoomState()
 
-    // Initialiser le niveau depuis les options ou par défaut
-    if (options?.initialLevel) {
+    if (options?.initialLevel)
       this.state.currentLevel = options.initialLevel;
-    }
 
     this.onMessage("playerMove", (client, message) => {
       const player = this.state.players.get(client.sessionId);
@@ -25,7 +23,6 @@ export class PixelMuseumRoom extends Room<PixelMuseumRoomState> {
       }
     });
 
-    // Gérer les changements de niveau
     this.onMessage("changeLevel", (client, message) => {
       const player = this.state.players.get(client.sessionId);
       if (player && message.level) {
@@ -35,7 +32,6 @@ export class PixelMuseumRoom extends Room<PixelMuseumRoomState> {
   }
 
   onJoin(client: Client) {
-    console.log(client.sessionId, "joined!");
 
     if (!this.state.players) {
       console.error("ERROR: this.state.players n'existe pas!");
@@ -50,10 +46,10 @@ export class PixelMuseumRoom extends Room<PixelMuseumRoomState> {
 
     const player = new Player();
     player.x = 810;
-    player.y = 140;
+    player.y = 120;
     player.flipX = false;
     player.anim = "stand";
-    player.level = this.state.currentLevel; // Initialiser avec le niveau actuel de la room
+    player.level = this.state.currentLevel;
 
     this.state.players.set(client.sessionId, player);
   }
