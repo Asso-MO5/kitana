@@ -59,6 +59,6 @@ export class PixelMuseumRoom extends Room<PixelMuseumRoomState> {
   }
 
   onDispose() {
-    console.log("Room", this.roomId, "disposing...");
+    // console.log("Room", this.roomId, "disposing...");
   }
 }
