@@ -46,7 +46,7 @@ export class PixelMuseumRoom extends Room<PixelMuseumRoomState> {
 
     const player = new Player();
     player.x = 810;
-    player.y = 120;
+    player.y = 155;
     player.flipX = false;
     player.anim = "stand";
     player.level = this.state.currentLevel;
