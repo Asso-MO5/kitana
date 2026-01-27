@@ -8,11 +8,12 @@ export class PixelMuseumRoom extends Room<PixelMuseumRoomState> {
   patchRate = 50;
 
   onCreate(options: any) {
-    this.state = new PixelMuseumRoomState()
+    this.state = new PixelMuseumRoomState();
 
     if (options?.initialLevel)
       this.state.currentLevel = options.initialLevel;
 
+    // Mise à jour de la position / anim du joueur + timestamp d'activité
     this.onMessage("playerMove", (client, message) => {
       const player = this.state.players.get(client.sessionId);
       if (player) {
@@ -20,6 +21,7 @@ export class PixelMuseumRoom extends Room<PixelMuseumRoomState> {
         if (message.y !== undefined) player.y = message.y;
         if (message.flipX !== undefined) player.flipX = message.flipX;
         if (message.anim !== undefined) player.anim = message.anim;
+        player.lastActiveAt = Date.now();
       }
     });
 
@@ -27,8 +29,31 @@ export class PixelMuseumRoom extends Room<PixelMuseumRoomState> {
       const player = this.state.players.get(client.sessionId);
       if (player && message.level) {
         player.level = message.level;
+        player.lastActiveAt = Date.now();
       }
     });
+
+    // Nettoyage périodique des joueurs inactifs
+    const IDLE_TIMEOUT_MS = 60 * 1000; // 60seconds
+    this.clock.setInterval(() => {
+      const now = Date.now();
+      this.state.players.forEach((player, sessionId) => {
+        if (!player.lastActiveAt) return;
+
+        if (now - player.lastActiveAt > IDLE_TIMEOUT_MS) {
+          this.state.players.delete(sessionId);
+
+          const client = this.clients.find((c) => c.sessionId === sessionId);
+          if (client) {
+            try {
+              client.leave(1000, "idle_timeout");
+            } catch {
+              // no catch
+            }
+          }
+        }
+      });
+    }, 5000);
   }
 
   onJoin(client: Client) {
@@ -50,6 +75,7 @@ export class PixelMuseumRoom extends Room<PixelMuseumRoomState> {
     player.flipX = false;
     player.anim = "stand";
     player.level = this.state.currentLevel;
+    player.lastActiveAt = Date.now();
 
     this.state.players.set(client.sessionId, player);
   }
